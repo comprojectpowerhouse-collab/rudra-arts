@@ -1,4 +1,6 @@
 // server.js
+import path from "path";
+import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -44,6 +46,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // MongoDB connection
+
+// Get __dirname in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, "dist")));
+
+// Catch-all to serve index.html for React Router
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
+});
 
 mongoose
   .connect(process.env.MONGO_URI)
