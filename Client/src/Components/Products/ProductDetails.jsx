@@ -9,6 +9,7 @@ import {
   FiCheck,
   FiZoomIn,
   FiZoomOut,
+  FiShare2,
 } from "react-icons/fi";
 
 const ProductDetails = () => {
@@ -32,6 +33,7 @@ const ProductDetails = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [copied, setCopied] = useState(false);
 
   const { addToCart } = useCart();
 
@@ -211,15 +213,34 @@ const ProductDetails = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {copied && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="fixed bottom-20 right-8 z-50"
+          >
+            <div className="bg-customBrown text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2">
+              <FiCheck className="text-xl" />
+              <span>Link copied to clipboard!</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="max-w-7xl mx-auto">
-        {/* Back button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center text-gray-600 hover:text-orange-600 mb-8 transition-colors duration-200 mt-20"
-        >
-          <FiArrowLeft className="mr-2" />
-          Back to Products
-        </button>
+        <div className="flex justify-between items-center mb-4 mt-20">
+          {/* Back Button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center text-gray-600 hover:text-orange-600 transition-colors duration-200"
+          >
+            <FiArrowLeft className="mr-2" />
+            Back to Products
+          </button>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Image gallery */}
@@ -371,9 +392,22 @@ const ProductDetails = () => {
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-medium py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
+                  className="w-50 bg-orange-600 hover:bg-orange-700 text-white font-medium py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
                 >
                   Add to cart
+                </button>
+                {/* Share Button */}
+                <button
+                  onClick={() => {
+                    const productUrl = `${window.location.origin}/product-details/${id}`;
+                    navigator.clipboard.writeText(productUrl);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-orange-600 transition-colors duration-200"
+                >
+                  <FiShare2 className="text-xl" />
+                  <span className="text-sm">Share</span>
                 </button>
               </div>
             </div>
