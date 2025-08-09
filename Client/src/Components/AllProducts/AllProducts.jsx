@@ -17,7 +17,9 @@ const AllProducts = () => {
     });
   }, []);
 
-  const { category } = useParams();
+  // const { category } = useParams();
+  const { category: categoryParam } = useParams();
+  const category = categoryParam ? decodeURIComponent(categoryParam) : null;
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,14 +70,19 @@ const AllProducts = () => {
 
   const categories = ["All", ...new Set(products.map((p) => p.category))];
 
+  const normalize = (str) =>
+    str
+      ? str
+          .toLowerCase()
+          .replace(/\s+/g, "")
+          .replace(/[^a-z0-9]/g, "")
+      : "";
+
   const filteredProducts = useMemo(() => {
     return products
       .filter((p) => {
         if (selectedCategory === "All") return true;
-        return (
-          p.category?.toLowerCase().trim() ===
-          selectedCategory.toLowerCase().trim()
-        );
+        return normalize(p.category) === normalize(selectedCategory);
       })
       .filter(
         (p) =>
@@ -207,7 +214,7 @@ const AllProducts = () => {
               </p>
             </motion.div>
           )}
-
+          {/* {console.log(selectedCategory)} */}
           {/* Category Filter */}
           <div className="mb-6 w-50">
             <label className="block text-amber-800 mb-2 font-medium">
@@ -221,7 +228,9 @@ const AllProducts = () => {
                 if (newCategory === "All") {
                   navigate("/products");
                 } else {
-                  navigate(`/products/category/${newCategory}`);
+                  navigate(
+                    `/products/category/${encodeURIComponent(newCategory)}`
+                  );
                 }
               }}
               className="w-full px-4 py-3 rounded-lg border border-amber-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white/80 text-amber-900 transition-all duration-300"
@@ -231,7 +240,7 @@ const AllProducts = () => {
               <option value="Maharaj">Maharaj</option>
               <option value="Shastra (Weapons)">Shastra (Weapons)</option>
               <option value="Miniature Weapons">Miniature Weapons</option>
-              <option value="Maniatures">Maniatures</option>
+              <option value="Miniatures">Miniatures</option>
               <option value="Spiritual Statues">Spiritual Statues</option>
               <option value="Car Dashboard">Car Dashboard</option>
               <option value="Frame Collection">Frame Collection</option>
