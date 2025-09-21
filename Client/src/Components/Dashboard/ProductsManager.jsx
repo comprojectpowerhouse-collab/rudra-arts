@@ -27,12 +27,14 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Grid,
 } from "@mui/material";
 import {
   Delete as DeleteIcon,
   Edit,
   CheckCircle,
   Cancel,
+  AddPhotoAlternate,
 } from "@mui/icons-material";
 import DashboardLayout from "./DashboardLayout";
 import { toast } from "react-toastify";
@@ -148,19 +150,28 @@ const ProductManager = () => {
   // Handle edit click
   const handleEditClick = (product) => {
     setEditProduct(product);
+
+    // Ensure we have exactly 8 image slots, filling with null if needed
+    const productImages = [...(product.product_image || [])];
+    while (productImages.length < 8) {
+      productImages.push(null);
+    }
+
     setEditFormData({
       pname: product.product_name,
       pDescription: product.product_description,
       pprice: product.product_price,
       psize: product.product_size,
       pcategory: product.product_category,
-      pimage: [...product.product_image], // Create a new array to avoid mutation
+      pimage: productImages,
       pdiscount: product.product_discount || "",
       inStock: product.inStock !== false,
     });
+
+    // Initialize newFiles array with null values
+    setNewFiles(Array(8).fill(null));
   };
 
-  // Handle edit save
   // Handle edit save
   const handleEditSave = async () => {
     try {
@@ -180,7 +191,17 @@ const ProductManager = () => {
         // If this is a blob URL, it means we have a new file to upload
         return img?.startsWith("blob:") ? null : img;
       });
-      formData.append("product_image", JSON.stringify(imageData));
+
+      // Remove trailing null values to avoid sending empty slots
+      const trimmedImageData = [];
+      for (let i = imageData.length - 1; i >= 0; i--) {
+        if (imageData[i] !== null) {
+          trimmedImageData.unshift(...imageData.slice(0, i + 1));
+          break;
+        }
+      }
+
+      formData.append("product_image", JSON.stringify(trimmedImageData));
 
       // Track which positions have new images
       const imagePositions = [];
@@ -219,7 +240,7 @@ const ProductManager = () => {
   const handleEditCancel = () => {
     // Clean up any object URLs we created for previews
     editFormData.pimage.forEach((img, index) => {
-      if (newFiles[index] && img.startsWith("blob:")) {
+      if (newFiles[index] && img?.startsWith("blob:")) {
         URL.revokeObjectURL(img);
       }
     });
@@ -237,7 +258,6 @@ const ProductManager = () => {
   };
 
   // Handle image upload when clicked
-  // In your handleImageClick function:
   const handleImageClick = async (index) => {
     const input = document.createElement("input");
     input.type = "file";
@@ -293,6 +313,28 @@ const ProductManager = () => {
 
     setNewFiles(updatedNewFiles);
   };
+
+  // Add new image slot
+  const addImageSlot = () => {
+    const currentImageCount = editFormData.pimage.filter(
+      (img) => img !== null
+    ).length;
+    if (currentImageCount >= 8) {
+      toast.error("Maximum 8 images allowed");
+      return;
+    }
+
+    // Find the first empty slot
+    const emptyIndex = editFormData.pimage.findIndex((img) => img === null);
+    if (emptyIndex !== -1) {
+      // Focus on the first empty slot
+      const imageElement = document.getElementById(`image-slot-${emptyIndex}`);
+      if (imageElement) {
+        imageElement.click();
+      }
+    }
+  };
+
   // Drag and drop handlers for image reordering
   const handleDragStart = (e, index) => {
     e.dataTransfer.setData("text/plain", index);
@@ -319,24 +361,15 @@ const ProductManager = () => {
     // Create a new array without mutating the original
     const newImages = [...editFormData.pimage];
 
-    // Remove undefined elements if any exist
-    const filteredImages = newImages.filter((img) => img !== undefined);
+    // Swap the images
+    const temp = newImages[sourceIndex];
+    newImages[sourceIndex] = newImages[targetIndex];
+    newImages[targetIndex] = temp;
 
-    // Ensure we have elements at both source and target indices
-    if (
-      sourceIndex < filteredImages.length &&
-      targetIndex < filteredImages.length
-    ) {
-      // Swap the images
-      const temp = filteredImages[sourceIndex];
-      filteredImages[sourceIndex] = filteredImages[targetIndex];
-      filteredImages[targetIndex] = temp;
-
-      setEditFormData((prev) => ({
-        ...prev,
-        pimage: filteredImages,
-      }));
-    }
+    setEditFormData((prev) => ({
+      ...prev,
+      pimage: newImages,
+    }));
   };
 
   const handleDragEnd = (e) => {
@@ -558,161 +591,218 @@ const ProductManager = () => {
         <Dialog
           open={Boolean(editProduct)}
           onClose={handleEditCancel}
+          maxWidth="lg"
+          fullWidth
           PaperProps={{
-            sx: { width: "50%", maxWidth: "none", borderRadius: "12px" },
+            sx: { borderRadius: "12px" },
           }}
         >
           <DialogTitle>Edit Product</DialogTitle>
           <DialogContent
             sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
           >
-            <TextField
-              label="Product Name"
-              name="pname"
-              value={editFormData.pname}
-              onChange={handleEditChange}
-              fullWidth
-            />
-            <TextField
-              label="Product Description"
-              name="pDescription"
-              value={editFormData.pDescription}
-              onChange={handleEditChange}
-              fullWidth
-            />
-            <TextField
-              label="Product Price"
-              name="pprice"
-              value={editFormData.pprice}
-              onChange={handleEditChange}
-              fullWidth
-              type="number"
-            />
-            <TextField
-              label="Product Size"
-              name="psize"
-              value={editFormData.psize}
-              onChange={handleEditChange}
-              fullWidth
-            />
-            <TextField
-              label="Product Discount (%)"
-              name="pdiscount"
-              value={editFormData.pdiscount}
-              onChange={handleEditChange}
-              fullWidth
-              type="number"
-            />
-
-            {/* Category Dropdown */}
-            <FormControl fullWidth>
-              <InputLabel id="category-label">Product Category</InputLabel>
-              <Select
-                labelId="category-label"
-                name="pcategory"
-                value={editFormData.pcategory}
-                label="Product Category"
-                onChange={handleEditChange}
-              >
-                {categories.map((category) => (
-                  <MenuItem key={category} value={category}>
-                    {category}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Product Name"
+                  name="pname"
+                  value={editFormData.pname}
+                  onChange={handleEditChange}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Product Price"
+                  name="pprice"
+                  value={editFormData.pprice}
+                  onChange={handleEditChange}
+                  fullWidth
+                  type="number"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="Product Description"
+                  name="pDescription"
+                  value={editFormData.pDescription}
+                  onChange={handleEditChange}
+                  fullWidth
+                  multiline
+                  rows={3}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Product Size"
+                  name="psize"
+                  value={editFormData.psize}
+                  onChange={handleEditChange}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Product Discount (%)"
+                  name="pdiscount"
+                  value={editFormData.pdiscount}
+                  onChange={handleEditChange}
+                  fullWidth
+                  type="number"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel id="category-label">Product Category</InputLabel>
+                  <Select
+                    labelId="category-label"
+                    name="pcategory"
+                    value={editFormData.pcategory}
+                    label="Product Category"
+                    onChange={handleEditChange}
+                  >
+                    {categories.map((category) => (
+                      <MenuItem key={category} value={category}>
+                        {category}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
 
             {/* Image Upload Section */}
-            <Typography variant="subtitle1">Product Images</Typography>
-            <Box display="flex" flexWrap="wrap" gap={2}>
-              {[0, 1, 2, 3].map((i) => {
-                const imageUrl = editFormData.pimage[i] || null;
-                return (
-                  <Box
-                    key={i}
-                    width={100}
-                    height={100}
-                    border="2px dashed #ccc"
-                    borderRadius={2}
-                    position="relative"
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    overflow="hidden"
-                    bgcolor="#f9f9f9"
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, i)}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.currentTarget.style.border = "2px dashed #1976d2";
-                    }}
-                    onDragLeave={(e) => {
-                      e.currentTarget.style.border = "2px dashed #ccc";
-                    }}
-                    onDrop={(e) => handleDrop(e, i)}
-                    onDragEnd={handleDragEnd}
-                    style={{
-                      cursor: "move",
-                      opacity: draggedImageIndex === i ? 0.5 : 1,
-                    }}
-                  >
-                    {imageUrl ? (
-                      <>
-                        <Avatar
-                          src={imageUrl}
-                          alt={`Product Image ${i + 1}`}
+            <Box mt={2}>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={2}
+              >
+                <Typography variant="subtitle1">
+                  Product Images (Up to 8)
+                </Typography>
+                <Button
+                  variant="outlined"
+                  startIcon={<AddPhotoAlternate />}
+                  onClick={addImageSlot}
+                  size="small"
+                >
+                  Add Image
+                </Button>
+              </Box>
+
+              <Grid container spacing={2}>
+                {editFormData.pimage.map((imageUrl, index) => (
+                  <Grid item xs={6} sm={4} md={3} key={index}>
+                    <Box
+                      id={`image-slot-${index}`}
+                      width="100%"
+                      height={120}
+                      border="2px dashed #ccc"
+                      borderRadius={2}
+                      position="relative"
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                      overflow="hidden"
+                      bgcolor="#f9f9f9"
+                      draggable={!!imageUrl}
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.currentTarget.style.border = "2px dashed #1976d2";
+                      }}
+                      onDragLeave={(e) => {
+                        e.currentTarget.style.border = "2px dashed #ccc";
+                      }}
+                      onDrop={(e) => handleDrop(e, index)}
+                      onDragEnd={handleDragEnd}
+                      style={{
+                        cursor: imageUrl ? "move" : "pointer",
+                        opacity: draggedImageIndex === index ? 0.5 : 1,
+                      }}
+                    >
+                      {imageUrl ? (
+                        <>
+                          <Avatar
+                            src={imageUrl}
+                            alt={`Product Image ${index + 1}`}
+                            sx={{
+                              width: "100%",
+                              height: "100%",
+                              borderRadius: 0,
+                            }}
+                            variant="square"
+                            onClick={() => handleImageClick(index)}
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleImageDelete(index);
+                            }}
+                            sx={{
+                              position: "absolute",
+                              top: 0,
+                              right: 0,
+                              backgroundColor: "rgba(0,0,0,0.5)",
+                              color: "white",
+                              "&:hover": {
+                                backgroundColor: "rgba(0,0,0,0.7)",
+                              },
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              backgroundColor: "rgba(0,0,0,0.5)",
+                              color: "white",
+                              textAlign: "center",
+                              fontSize: "10px",
+                              padding: "2px",
+                            }}
+                          >
+                            {index + 1}
+                          </Box>
+                        </>
+                      ) : (
+                        <Box
                           sx={{
                             width: "100%",
                             height: "100%",
-                            borderRadius: 0,
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            cursor: "pointer",
                           }}
-                          variant="square"
-                          onClick={() => handleImageClick(i)}
-                        />
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleImageDelete(i);
-                          }}
-                          sx={{
-                            position: "absolute",
-                            top: 0,
-                            right: 0,
-                            backgroundColor: "rgba(0,0,0,0.5)",
-                            color: "white",
-                            "&:hover": {
-                              backgroundColor: "rgba(0,0,0,0.7)",
-                            },
-                          }}
+                          onClick={() => handleImageClick(index)}
                         >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </>
-                    ) : (
-                      <Box
-                        sx={{
-                          width: "100%",
-                          height: "100%",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => handleImageClick(i)}
-                      >
-                        <Typography variant="caption" textAlign="center">
-                          Click to upload
-                        </Typography>
-                      </Box>
-                    )}
-                  </Box>
-                );
-              })}
+                          <Typography variant="caption" textAlign="center">
+                            Click to upload
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+
+              <Typography
+                variant="caption"
+                color="textSecondary"
+                display="block"
+                mt={1}
+              >
+                Drag to reorder images • Click to update image • Click X to
+                delete
+              </Typography>
             </Box>
-            <Typography variant="caption" color="textSecondary">
-              Drag to reorder images • Click to update image • Click X to delete
-            </Typography>
 
             {/* Stock Status Switch */}
             <FormControlLabel
@@ -731,7 +821,7 @@ const ProductManager = () => {
               }
               label={editFormData.inStock ? "In Stock" : "Out of Stock"}
               labelPlacement="start"
-              sx={{ justifyContent: "space-between", ml: 0 }}
+              sx={{ justifyContent: "space-between", ml: 0, mt: 2 }}
             />
           </DialogContent>
           <DialogActions>
