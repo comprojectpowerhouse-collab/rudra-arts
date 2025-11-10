@@ -1,9 +1,12 @@
-const express = require("express")
-const router = express.Router()
-const {getGallery, addGalleryItem} = require('../controllers/galleryController')
+import { Router } from "express";
+const router = Router();
+import {
+  getGallery,
+  addGalleryItem,
+} from "../controllers/galleryController.js";
 
-router.get('/',getGallery)
+router.get("/", getGallery);
 
-router.post('/',addGalleryItem)
+router.post("/", addGalleryItem);
 
-module.exports = router
+export default router;

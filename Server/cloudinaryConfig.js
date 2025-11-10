@@ -1,5 +1,5 @@
 // src/config/cloudinary.js
-const cloudinary = require("cloudinary").v2;
+import { v2 as cloudinary } from "cloudinary";
 require("dotenv").config(); // ✅ Load .env if not already loaded globally
 
 // Validate required env variables (optional but professional)
@@ -17,4 +17,4 @@ cloudinary.config({
   api_secret: process.env.CLOUD_SECRET_KEY,
 });
 
-module.exports = cloudinary;
+export default cloudinary;

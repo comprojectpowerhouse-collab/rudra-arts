@@ -23,7 +23,7 @@ const Home = () => {
     {
       type: "product",
       image: isMobile
-        ? "/images/mobile/WhatsApp-Image-2025-07-19-at-15.32.21_918c279f-mobile.jpg"
+        ? "/images/WhatsApp Image-2025-07-19-at-15.32.21_918c279f.jpg"
         : "/images/WhatsApp Image 2025-07-19 at 15.32.21_918c279f.jpg",
       title: "Explore Our Collection",
       buttonText: "View Products",
@@ -31,7 +31,7 @@ const Home = () => {
     {
       type: "achievement",
       image: isMobile
-        ? "/images/mobile/IMG-20250617-WA0022-mobile.jpg"
+        ? "/images/IMG-20250617-WA0022.jpg"
         : "/images/IMG-20250617-WA0022.jpg",
       title: "Honored to Meet the President",
       description:
@@ -40,7 +40,7 @@ const Home = () => {
     },
     {
       type: "about",
-      image: isMobile ? "/images/mobile/img8-mobile.jpg" : "/images/img8.jpg",
+      image: isMobile ? "/images/img8.jpg" : "/images/img8.jpg",
       title: "A Tribute to Valor and Legacy",
       description:
         "Inspired by the indomitable spirit of Chhatrapati Shivaji Maharaj, this memento honors the courage, leadership, and sacrifice that defines our armed forces. A timeless symbol of bravery, crafted for those who serve the nation with pride.",
@@ -48,7 +48,7 @@ const Home = () => {
     },
     {
       type: "about",
-      image: isMobile ? "/images/mobile/dhoop-mobile.jpg" : "/images/dhoop.jpg",
+      image: isMobile ? "/images/dhoop.jpg" : "/images/dhoop.jpg",
       title: "Explore Our Dhoop Collection",
       buttonText: "Shop Now",
     },
@@ -431,4 +431,3 @@ const Home = () => {
 };
 
 export default Home;
-  
