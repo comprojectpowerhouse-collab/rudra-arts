@@ -131,7 +131,7 @@ const Footer = () => {
             rel="noreferrer"
             className="hover:underline text-green-400"
           >
-            Powerhouse Tech Solutions
+            Enclecta Ventures
           </a>
         </span>
       </div>
