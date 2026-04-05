@@ -30,36 +30,36 @@ const TeamComponent = () => {
       historicalNote:
         "She has revived long-lost crafting methods and adapted them for contemporary collectors.",
     },
-    {
-      id: 3,
-      name: "Reshma Tupe",
-      role: "Team Leader",
-      description:
-        "Reshma brings unmatched dedication to Rudra Arts, guiding our team of artisans with patience and skill. She ensures each creation is finished with precision and care.",
-      image: "/images/teammember1.jpg",
-      historicalNote:
-        "Having learned under respected masters, she now mentors upcoming artisans and upholds our commitment to authentic craftsmanship.",
-    },
-    {
-      id: 4,
-      name: "Yash Indalkar",
-      role: "Quality Control & Sales Assistant",
-      description:
-        "Yash’s deep knowledge of traditional forging and finishing guarantees each product meets Rudra Arts’ strict quality standards before reaching our clients.",
-      image: "/images/teammember2.jpg",
-      historicalNote:
-        "He specializes in quality inspections rooted in traditional blacksmith practices.",
-    },
-    {
-      id: 5,
-      name: "Sanika Indalkar",
-      role: "Sales Assistant",
-      description:
-        "Sanika connects clients and collectors to our heritage pieces, sharing the stories, meaning, and cultural significance behind every work of art.",
-      image: "/images/teammember3.jpg",
-      historicalNote:
-        "She comes from a family with a deep tradition in local trade, continuing their legacy through her passion for art and storytelling.",
-    },
+    // {
+    //   id: 3,
+    //   name: "Reshma Tupe",
+    //   role: "Team Leader",
+    //   description:
+    //     "Reshma brings unmatched dedication to Rudra Arts, guiding our team of artisans with patience and skill. She ensures each creation is finished with precision and care.",
+    //   image: "/images/teammember1.jpg",
+    //   historicalNote:
+    //     "Having learned under respected masters, she now mentors upcoming artisans and upholds our commitment to authentic craftsmanship.",
+    // },
+    // {
+    //   id: 4,
+    //   name: "Yash Indalkar",
+    //   role: "Quality Control & Sales Assistant",
+    //   description:
+    //     "Yash’s deep knowledge of traditional forging and finishing guarantees each product meets Rudra Arts’ strict quality standards before reaching our clients.",
+    //   image: "/images/teammember2.jpg",
+    //   historicalNote:
+    //     "He specializes in quality inspections rooted in traditional blacksmith practices.",
+    // },
+    // {
+    //   id: 5,
+    //   name: "Sanika Indalkar",
+    //   role: "Sales Assistant",
+    //   description:
+    //     "Sanika connects clients and collectors to our heritage pieces, sharing the stories, meaning, and cultural significance behind every work of art.",
+    //   image: "/images/teammember3.jpg",
+    //   historicalNote:
+    //     "She comes from a family with a deep tradition in local trade, continuing their legacy through her passion for art and storytelling.",
+    // },
   ];
 
   // Split team members into two groups: first 2 and last 3
