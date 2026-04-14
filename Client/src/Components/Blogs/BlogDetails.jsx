@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiArrowLeft } from "react-icons/fi";
+import { fetchCachedJson } from "../../lib/api";
+import { getOptimizedImage } from "../../lib/media";
 
 const BlogDetail = () => {
   const { id } = useParams();
@@ -15,10 +17,10 @@ const BlogDetail = () => {
 
     const fetchBlog = async () => {
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_BASE_URL_PRODUCTION}/api/blogs/${id}`
-        );
-        const data = await res.json();
+        const data = await fetchCachedJson(`/api/blogs/${id}`, {
+          cacheKey: `blog:${id}`,
+          ttlMs: 5 * 60 * 1000,
+        });
         setBlog(data);
       } catch (err) {
         console.error("Failed to fetch blog:", err);
@@ -114,7 +116,7 @@ const BlogDetail = () => {
             {/* Image */}
             {blog.image && (
               <img
-                src={blog.image}
+                src={getOptimizedImage(blog.image, "hero")}
                 alt={blog.title}
                 className="w-[20rem] md:w-[24rem] h-auto rounded-lg shadow"
               />

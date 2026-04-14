@@ -8,6 +8,8 @@ import aboutBg from "/images/border.jpg";
 import { Skeleton } from "@mui/material";
 import AnimatedUnderline from "../AnimatedUnderline/AnimatedUnderline";
 import { useMemo } from "react";
+import { fetchCachedJson, setCachedData } from "../../lib/api";
+import { getOptimizedImage } from "../../lib/media";
 
 const AllProducts = () => {
   useEffect(() => {
@@ -41,11 +43,10 @@ const AllProducts = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
-          `${import.meta.env.VITE_BASE_URL_PRODUCTION}/api/products`
-        );
-        if (!response.ok) throw new Error("Failed to fetch products");
-        const data = await response.json();
+        const data = await fetchCachedJson("/api/products", {
+          cacheKey: "products:list",
+          ttlMs: 5 * 60 * 1000,
+        });
 
         const productsWithExtras = data
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -59,6 +60,7 @@ const AllProducts = () => {
           }));
 
         setProducts(productsWithExtras);
+        setCachedData("products:list", productsWithExtras);
         setLoading(false);
       } catch (error) {
         console.error(error);
@@ -387,10 +389,7 @@ const AllProducts = () => {
                           <div className="relative overflow-hidden">
                             <div className="h-60 overflow-hidden bg-amber-50 flex items-center justify-center">
                               <motion.img
-                                src={product.product_image[0].replace(
-                                  "/upload/",
-                                  "/upload/w_600,q_auto,f_auto/"
-                                )}
+                                src={getOptimizedImage(product.product_image[0], "card")}
                                 alt={product.product_name}
                                 className="max-h-56 w-auto object-contain transition-transform duration-500 group-hover:scale-105"
                                 loading="lazy"
@@ -501,10 +500,7 @@ const AllProducts = () => {
                       <div className="relative overflow-hidden">
                         <div className="h-52 overflow-hidden bg-amber-50 flex items-center justify-center">
                           <motion.img
-                            src={product.product_image[0].replace(
-                              "/upload/",
-                              "/upload/w_600,q_auto,f_auto/"
-                            )}
+                            src={getOptimizedImage(product.product_image[0], "card")}
                             alt={product.product_name}
                             className="max-h-48 w-auto object-contain transition-transform duration-500 group-hover:scale-105"
                             loading="lazy"

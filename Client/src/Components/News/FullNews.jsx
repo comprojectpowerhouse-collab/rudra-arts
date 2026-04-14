@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Typography, Box, Button } from "@mui/material";
-import weaponsBg from "../../assets/images/Weponsbg.jpg";
 import AnimatedUnderline from "../AnimatedUnderline/AnimatedUnderline";
+import { fetchCachedJson } from "../../lib/api";
+import { getOptimizedImage } from "../../lib/media";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 40 },
@@ -28,17 +29,10 @@ const FullNews = () => {
       setLoading(true);
       setError(null);
 
-      const apiUrl = `${
-        import.meta.env.VITE_BASE_URL_PRODUCTION
-      }/api/news?page=${page}&limit=6`;
-      console.log("Fetching news from:", apiUrl);
-
-      const response = await fetch(apiUrl);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await fetchCachedJson(`/api/news?page=${page}&limit=6`, {
+        cacheKey: `news:page:${page}`,
+        ttlMs: 3 * 60 * 1000,
+      });
 
       if (!Array.isArray(data.newsItems)) {
         throw new Error(
@@ -85,14 +79,14 @@ const FullNews = () => {
           position: "absolute",
           inset: 0,
           zIndex: 0,
-          backgroundImage: `url(${weaponsBg})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          background:
+            "radial-gradient(circle at top, rgba(245, 158, 11, 0.18), transparent 40%), linear-gradient(180deg, rgba(255, 251, 235, 0.98), rgba(254, 243, 199, 0.98))",
           "&::before": {
             content: '""',
             position: "absolute",
             inset: 0,
-            backgroundColor: "rgba(255, 255, 255, 0.92)",
+            background:
+              "linear-gradient(135deg, rgba(140, 57, 27, 0.04), rgba(217, 119, 6, 0.08))",
           },
         }}
       />
@@ -221,7 +215,7 @@ const FullNews = () => {
                   >
                     <Box
                       component="img"
-                      src={news.image}
+                      src={getOptimizedImage(news.image, "blog")}
                       alt={news.title}
                       sx={{
                         width: "100%",

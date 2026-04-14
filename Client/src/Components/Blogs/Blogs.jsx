@@ -11,6 +11,8 @@ import {
 import { Link } from "react-router-dom";
 import bg from "/images/border.jpg";
 import AnimatedUnderline from "../AnimatedUnderline/AnimatedUnderline";
+import { fetchCachedJson } from "../../lib/api";
+import { getOptimizedImage } from "../../lib/media";
 
 const Blogs = () => {
   useEffect(() => {
@@ -38,12 +40,10 @@ const Blogs = () => {
   const fetchBlogs = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(
-        `${
-          import.meta.env.VITE_BASE_URL_PRODUCTION
-        }/api/blogs/all?status=approved`
-      );
-      const data = await res.json();
+      const data = await fetchCachedJson("/api/blogs/all?status=approved", {
+        cacheKey: "blogs:approved",
+        ttlMs: 5 * 60 * 1000,
+      });
       setBlogs(data.reverse());
       setIsLoading(false);
     } catch (err) {
@@ -83,7 +83,7 @@ const Blogs = () => {
       if (newBlog.image) formData.append("image", newBlog.image);
 
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL_PRODUCTION}/api/blogs/submit`,
+        `${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BASE_URL_PRODUCTION}/api/blogs/submit`,
         { method: "POST", body: formData }
       );
 
@@ -245,8 +245,8 @@ const Blogs = () => {
                   <Link to={`/blogs/${blog._id}`} className="block h-full">
                     <div className="relative h-48 overflow-hidden">
                       {blog.image ? (
-                        <img
-                          src={blog.image}
+                          <img
+                          src={getOptimizedImage(blog.image, "blog")}
                           alt={blog.title}
                           className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                           loading="lazy"

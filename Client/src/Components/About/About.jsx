@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import aboutBg from "../../assets/images/about-bg.jpg";
 import AnimatedUnderline from "../AnimatedUnderline/AnimatedUnderline";
 
 const cardVariants = {

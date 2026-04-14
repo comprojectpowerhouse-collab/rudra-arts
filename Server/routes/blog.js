@@ -12,23 +12,35 @@ import {
   toggleBlogHide,
   getBlogById,
 } from "../controllers/blogController.js";
+import { noStore, publicCache } from "../middleware/cacheControl.js";
 
 const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+const approvedBlogsCache = (req, res, next) => {
+  if (req.query.status === "approved") {
+    return publicCache({ sMaxAge: 180, staleWhileRevalidate: 1800 })(
+      req,
+      res,
+      next
+    );
+  }
+
+  return noStore(req, res, next);
+};
 
 // 🧑‍💻 User
-router.post("/submit", upload.single("image"), requestBlog);
+router.post("/submit", noStore, upload.single("image"), requestBlog);
 
 // ✅ Admin
-router.get("/all", getAllBlogs);
-router.post("/add", upload.single("image"), addBlog); // existing
-router.get("/pending", getPendingBlogs);
-router.put("/approve/:id", approveBlog);
-router.put("/reject/:id", rejectBlog);
-router.put("/update/:id", upload.single("image"), updateBlog);
-router.delete("/delete/:id", deleteBlog);
-router.put("/hide-toggle/:id", toggleBlogHide);
-router.get("/:id", getBlogById);
+router.get("/all", approvedBlogsCache, getAllBlogs);
+router.post("/add", noStore, upload.single("image"), addBlog); // existing
+router.get("/pending", noStore, getPendingBlogs);
+router.put("/approve/:id", noStore, approveBlog);
+router.put("/reject/:id", noStore, rejectBlog);
+router.put("/update/:id", noStore, upload.single("image"), updateBlog);
+router.delete("/delete/:id", noStore, deleteBlog);
+router.put("/hide-toggle/:id", noStore, toggleBlogHide);
+router.get("/:id", publicCache({ sMaxAge: 300, staleWhileRevalidate: 3600 }), getBlogById);
 
 export default router;

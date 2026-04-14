@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { fetchCachedJson } from "../../lib/api";
+import { getOptimizedImage } from "../../lib/media";
 
 export default function LatestProducts() {
   const [products, setProducts] = useState([]);
@@ -11,10 +13,10 @@ export default function LatestProducts() {
   useEffect(() => {
     const fetchLatestProducts = async () => {
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_BASE_URL_PRODUCTION}/api/products`
-        );
-        const data = await res.json();
+        const data = await fetchCachedJson("/api/products", {
+          cacheKey: "products:list",
+          ttlMs: 5 * 60 * 1000,
+        });
         const sortedProducts = data.sort(
           (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
         );
@@ -48,10 +50,8 @@ export default function LatestProducts() {
             <div className="relative overflow-hidden bg-white shadow-md">
               <img
                 src={
-                  product.product_image?.[0].replace(
-                    "/upload/",
-                    "/upload/w_400,q_auto,f_auto/"
-                  ) || "/placeholder-image.jpg"
+                  getOptimizedImage(product.product_image?.[0], "card") ||
+                  "/placeholder-image.jpg"
                 }
                 loading="lazy"
                 alt={product.product_name}

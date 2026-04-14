@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import TeamComponent from "../TeamComponent/TeamComponent";
 import AnimatedUnderline from "../AnimatedUnderline/AnimatedUnderline";
 
+const getGalleryImageUrl = (src) => src;
+
 const images = {
   statueUnit: [
     { src: "/images/bts2.jpg", title: "Crafting Perfection" },
@@ -117,9 +119,13 @@ const BTS = () => {
               onClick={() => openImage(unitName, index)}
             >
               <img
-                src={img.src}
+                src={getGalleryImageUrl(img.src)}
                 alt={img.title}
                 className="w-full h-full object-cover transition-all duration-500"
+                loading="lazy"
+                decoding="async"
+                fetchPriority="low"
+                sizes="(max-width: 768px) 33vw, (max-width: 1280px) 25vw, 20vw"
                 style={{
                   transform:
                     hoveredIndex === index ? "scale(1.05)" : "scale(1)",
@@ -178,28 +184,28 @@ const BTS = () => {
         {renderGallery(
           "printingUnit",
           "3D Printing & Miniature Unit",
-          "Innovative technology crafting detailed miniatures with perfect accuracy"
+          "Innovative technology crafting detailed miniatures with perfect accuracy",
         )}
 
         {/* Frame Manufacturing Unit */}
         {renderGallery(
           "frameUnit",
           "Frame Manufacturing Unit",
-          "Handcrafted frames that complement and enhance every artwork"
+          "Handcrafted frames that complement and enhance every artwork",
         )}
 
         {/* Coloring Manufacturing Unit */}
         {renderGallery(
           "colouringUnit",
           "Colouring Unit",
-          "Handcrafted frames that complement and enhance every artwork"
+          "Handcrafted frames that complement and enhance every artwork",
         )}
 
         {/* Coloring Manufacturing Unit */}
         {renderGallery(
           "weaponsUnit",
           "Weapons Unit",
-          "Handcrafted frames that complement and enhance every artwork"
+          "Handcrafted frames that complement and enhance every artwork",
         )}
 
         {/* Image Modal */}
@@ -228,9 +234,13 @@ const BTS = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <img
-                  src={images[selectedImageSet][selectedImage].src}
+                  src={getGalleryImageUrl(
+                    images[selectedImageSet][selectedImage].src,
+                  )}
                   alt={images[selectedImageSet][selectedImage].title}
                   className="w-full h-full object-contain max-h-[80vh] mx-auto"
+                  decoding="async"
+                  fetchPriority="high"
                 />
                 <div className="mt-4 text-center text-white">
                   <h3 className="text-xl font-medium">

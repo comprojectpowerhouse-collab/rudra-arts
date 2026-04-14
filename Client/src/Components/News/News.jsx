@@ -1,23 +1,21 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaYoutube, FaExternalLinkAlt, FaPlay } from "react-icons/fa";
 import AnimatedUnderline from "../AnimatedUnderline/AnimatedUnderline";
+import { fetchCachedJson } from "../../lib/api";
+import { getOptimizedImage, getVideoAsset } from "../../lib/media";
 
 const News = () => {
   const [newsData, setNewsData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const videoRefs = useRef([]);
-
-  // Static video data
   const videoCards = [
     {
       id: 1,
       title: "शिवकालीन शस्त्रांचे आजचे शिल्पकार | Satyajit Arun Vaidya",
       description:
         "रुद्र आर्ट्स आणि हँडीक्राफ्ट्स चे संस्थापक सत्यजीत अरुण वैद्य यांच्यासोबत हा संवाद आहे, ज्यांनी ऐतिहासिक शस्त्रांची आवड व्यवसायात रूपांतरित केली. त्यांनी त्यांच्या नोकरीला सोडून, इतिहासाच्या प्रेमाने प्रेरित होऊन शस्त्रांची पुनर्रचना कशी केली आणि त्यात आलेल्या अडचणींचा समावेश केला आहे.",
-      videoUrl: "/Videos/videoplayback.mp4",
-      thumbnail: "/images/thumb1.jpg",
-      link: "https://youtu.be/xh-ibz0qxaA?si=xUepIS8RUdQu2EU8",
+      thumbnail: getVideoAsset("featured1").poster,
+      link: getVideoAsset("featured1").youtubeUrl,
     },
     {
       id: 2,
@@ -25,27 +23,25 @@ const News = () => {
         "भेटरूपी ऐतिहासिक शस्त्र बनवतात पुण्यातील सत्यजीत वैद्य | historic weapons",
       description:
         "शस्त्रांनी घडवलेला इतिहास आजच्या पिढीला समजावा याची जाणीव सत्यजीत यांना एक घटनेतून झाली आणि मग त्यांनी थेट शस्त्रच बनवायला सुरुवात केली",
-      videoUrl: "/Videos/video2.mp4",
-      thumbnail: "/images/thumb2.jpg",
-      link: "https://youtu.be/2alkiZgDxMI?si=GBQ9R3Cd1j5Yxw0T",
+      thumbnail: getVideoAsset("featured2").poster,
+      link: getVideoAsset("featured2").youtubeUrl,
     },
     {
       id: 3,
       title: "पुरातन शस्त्रांचा इतिहास जोपासणारा 'कलाकार मावळा'",
       description:
         "छत्रपती शिवाजी महाराज, छत्रपती संभाजी महाराज यांच्या बरोबर अनेक मावळे शस्रास्रे घेऊन युद्धासाठी जात आणि या लढाया जिकूनच त्यानी  स्वराज्याची स्थापना केली. त्यावेळी जी शस्त्रे वापरत होती ती इतिहासकालीन शस्त्रे आज कुठे तरी लोप पावत चालली आहेत. पण आपलें शस्त्रावरील प्रेम आपलं कलेवरील प्रेम आणि आपला इतिहास जिवंत ठेवण्यासाठी एक तरुण पूर्ण शस्त्रांचे दालन बनवतो ते पण असे दालन जिथे गेल्यावर महाराजांची आठवण आल्याशिवाय राहणार नाही.   ",
-      videoUrl: "Videos/video3.mp4",
-      thumbnail: "/images/thumb3.jpg",
-      link: "https://youtu.be/WpBQTatwZhs?si=FB1EmdLeHk4v0IY8",
+      thumbnail: getVideoAsset("featured3").poster,
+      link: getVideoAsset("featured3").youtubeUrl,
     },
   ];
 
   const fetchLatestNews = async () => {
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BASE_URL_PRODUCTION}/api/news?limit=4&sort=desc`
-      );
-      const data = await res.json();
+      const data = await fetchCachedJson("/api/news?limit=4&sort=desc", {
+        cacheKey: "news:homepage",
+        ttlMs: 3 * 60 * 1000,
+      });
       const filteredNews = (data.newsItems || []).filter(
         (news) => !news.isHide
       );
@@ -60,16 +56,6 @@ const News = () => {
   useEffect(() => {
     fetchLatestNews();
   }, []);
-
-  const handleVideoHover = (index, isHovering) => {
-    if (videoRefs.current[index]) {
-      if (isHovering) {
-        videoRefs.current[index].play();
-      } else {
-        videoRefs.current[index].pause();
-      }
-    }
-  };
 
   if (loading) {
     return (
@@ -135,7 +121,7 @@ const News = () => {
                 {/* Top Image */}
                 <div className="relative">
                   <img
-                    src={news.image}
+                    src={getOptimizedImage(news.image, "blog")}
                     alt={news.title}
                     className="w-full h-40 sm:h-52 object-cover"
                     onError={(e) => {
@@ -218,24 +204,26 @@ const News = () => {
                 transition={{ delay: index * 0.1 + 0.3, duration: 0.5 }}
                 viewport={{ once: true, margin: "-50px" }}
                 className="bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
-                onMouseEnter={() => handleVideoHover(index, true)}
-                onMouseLeave={() => handleVideoHover(index, false)}
               >
                 {/* Video Container */}
                 <div className="relative aspect-video bg-black group">
-                  <video
-                    ref={(el) => (videoRefs.current[index] = el)}
-                    src={video.videoUrl}
-                    poster={video.thumbnail}
-                    muted
-                    loop
+                  <img
+                    src={video.thumbnail}
+                    alt={video.title}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-black bg-opacity-50 rounded-full p-3">
-                      <FaPlay className="text-white text-xl" />
+                  <a
+                    href={video.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors duration-300 hover:bg-black/35"
+                    aria-label={`Watch ${video.title}`}
+                  >
+                    <div className="rounded-full bg-white/90 p-4 shadow-lg">
+                      <FaPlay className="text-amber-700 text-xl" />
                     </div>
-                  </div>
+                  </a>
                 </div>
 
                 {/* Video Content */}

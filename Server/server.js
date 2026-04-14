@@ -34,7 +34,7 @@ app.use(
       }
     },
     credentials: false,
-  })
+  }),
 );
 
 app.use(express.json());

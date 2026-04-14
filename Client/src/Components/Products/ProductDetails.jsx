@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCart } from "../../Contexts/Contexts";
+import { fetchCachedJson, getCachedData, setCachedData } from "../../lib/api";
+import { getOptimizedImage } from "../../lib/media";
 import {
   FiChevronLeft,
   FiChevronRight,
@@ -39,13 +41,23 @@ const ProductDetails = () => {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      const cachedProducts = getCachedData("products:list");
+      const cachedProduct = cachedProducts?.find((item) => item._id === id);
+
+      if (cachedProduct) {
+        setProduct(cachedProduct);
+        setSelectedImage(cachedProduct.product_image?.[0] || null);
+        setLoading(false);
+        return;
+      }
+
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_BASE_URL_PRODUCTION}/api/products/${id}`
-        );
-        if (!res.ok) throw new Error("Failed to fetch product");
-        const data = await res.json();
+        const data = await fetchCachedJson(`/api/products/${id}`, {
+          cacheKey: `product:${id}`,
+          ttlMs: 5 * 60 * 1000,
+        });
         setProduct(data);
+        setCachedData(`product:${id}`, data);
         setSelectedImage(data.product_image?.[0]);
       } catch (err) {
         console.error(err);
@@ -256,9 +268,9 @@ const ProductDetails = () => {
                 style={isDragging ? { cursor: "grabbing" } : {}}
               >
                 <img
-                  src={selectedImage}
+                  src={getOptimizedImage(selectedImage, "detail")}
                   alt="Product"
-                  loading="lazy"
+                  loading="eager"
                   className="object-contain transition-transform duration-300"
                   style={{
                     transform: `translate(${position.x}px, ${position.y}px) scale(${zoomLevel})`,
@@ -335,7 +347,7 @@ const ProductDetails = () => {
                       }`}
                     >
                       <img
-                        src={img}
+                        src={getOptimizedImage(img, "thumbnail")}
                         loading="lazy"
                         alt={`Thumbnail ${index}`}
                         className="w-full h-full object-cover"

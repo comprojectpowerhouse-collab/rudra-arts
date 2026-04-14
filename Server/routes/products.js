@@ -2,6 +2,7 @@ import express from "express";
 import multer from "multer";
 import Product from "../models/Products.js";
 import productController from "../controllers/productsController.js";
+import { noStore, publicCache } from "../middleware/cacheControl.js";
 
 const router = express.Router();
 const storage = multer.memoryStorage();
@@ -10,6 +11,7 @@ const upload = multer({ storage });
 // Create
 router.post(
   "/add",
+  noStore,
   upload.array("pimages", 10),
   productController.createProduct
 );
@@ -17,12 +19,13 @@ router.post(
 // Update product with image handling
 router.put(
   "/:id",
+  noStore,
   upload.array("pimages", 10), // Allow multiple file uploads
   productController.updateProduct
 );
 
 // Read all products
-router.get("/", async (req, res) => {
+router.get("/", publicCache({ sMaxAge: 300, staleWhileRevalidate: 3600 }), async (req, res) => {
   try {
     const products = await Product.find();
     res.json(products);
@@ -32,7 +35,7 @@ router.get("/", async (req, res) => {
 });
 
 // Read single product
-router.get("/:id", async (req, res) => {
+router.get("/:id", publicCache({ sMaxAge: 300, staleWhileRevalidate: 3600 }), async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ error: "Product not found" });
@@ -117,7 +120,7 @@ router.get("/category/:category", async (req, res) => {
 // });
 
 // Delete product
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", noStore, async (req, res) => {
   try {
     const deletedProduct = await Product.findByIdAndDelete(req.params.id);
     if (!deletedProduct)
@@ -129,7 +132,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 // WhatsApp share
-router.get("/bulk/whatsapp-message", async (req, res) => {
+router.get("/bulk/whatsapp-message", publicCache({ sMaxAge: 300, staleWhileRevalidate: 1800 }), async (req, res) => {
   try {
     const productIds = JSON.parse(req.query.productIds);
 
@@ -155,7 +158,7 @@ router.get("/bulk/whatsapp-message", async (req, res) => {
 });
 
 // Update stock status
-router.patch("/:id/stock", async (req, res) => {
+router.patch("/:id/stock", noStore, async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(
       req.params.id,

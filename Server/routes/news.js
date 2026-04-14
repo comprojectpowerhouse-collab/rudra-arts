@@ -11,6 +11,7 @@ import {
 } from "../controllers/newsController.js";
 import multer from "multer";
 import streamifier from "streamifier";
+import { noStore, publicCache } from "../middleware/cacheControl.js";
 
 const router = express.Router();
 
@@ -19,13 +20,13 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // Route
-router.post("/add", upload.single("image"), addNews);
-router.get("/", getAllNews);
-router.get("/all", getAllNewsSimple);
-router.put("/update/:id", upload.single("image"), updateNews);
-router.delete("/delete/:id", deleteNews);
-router.put("/hide-toggle/:id", toggleHideNews);
-router.get("/visible", getVisibleNews);
-router.get("/hidden", getHiddenNews);
+router.post("/add", noStore, upload.single("image"), addNews);
+router.get("/", publicCache({ sMaxAge: 180, staleWhileRevalidate: 1800 }), getAllNews);
+router.get("/all", noStore, getAllNewsSimple);
+router.put("/update/:id", noStore, upload.single("image"), updateNews);
+router.delete("/delete/:id", noStore, deleteNews);
+router.put("/hide-toggle/:id", noStore, toggleHideNews);
+router.get("/visible", publicCache({ sMaxAge: 180, staleWhileRevalidate: 1800 }), getVisibleNews);
+router.get("/hidden", noStore, getHiddenNews);
 
 export default router;
